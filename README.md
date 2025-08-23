@@ -1,4 +1,4 @@
---------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------
 prompt usado en la version 1.1:
 Quiero que me ayudes para un proyecto universitario basado en el siguiente flujo de compra (solo hasta el paso 6):
 
@@ -31,9 +31,52 @@ Quiero que me ayudes para un proyecto universitario basado en el siguiente flujo
 Importante:
 El resultado debe ser código en Python, funcional y sin errores, siguiendo las reglas del documento del proyecto.
 Por ahora centrémonos en el Cliente, y únicamente lo esencia para que esta funcione
---------------------------------------------------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------
 v1.2
 se movio los archivos a una carpeta llamada pruebas, funcionan correctamente
---------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------
+v2.0
+se agrego el codigo de los archivos de pruebas a los archivos originales, y luego se areglaron error, el principal error era
+ 
+ 
+ un from Cliente import Cliente que no se usaba 
+el error generaba esto:
+Traceback (most recent call last):
+  File "c:\Users\Angel\Documents\UNIVERSIDAD\2025-UNA\2 ciclo\ESTRUCTURAS DE DATOS\PRUEBAS_V1\PRUEBAS\Src\main.py", line 12, in <module>
+    from Carrito import Carrito
+  File "c:\Users\Angel\Documents\UNIVERSIDAD\2025-UNA\2 ciclo\ESTRUCTURAS DE DATOS\PRUEBAS_V1\PRUEBAS\Src\Carrito.py", line 1, in <module>
+    from Cliente import Cliente
+  File "c:\Users\Angel\Documents\UNIVERSIDAD\2025-UNA\2 ciclo\ESTRUCTURAS DE DATOS\PRUEBAS_V1\PRUEBAS\Src\Cliente.py", line 4, in <module>
+    from Carrito import Carrito
+ImportError: cannot import name 'Carrito' from 'Carrito' (consider renaming 'c:\\Users\\Angel\\Documents\\UNIVERSIDAD\\2025-UNA\\2 ciclo\\ESTRUCTURAS DE DATOS\\PRUEBAS_V1\\PRUEBAS\\Src\\Carrito.py' if it has the same name as a library you intended to import)
+
+
+
+el promt usado para mover el codigo: 
+Hay archivos que se encuentran en la carpeta llamada pruebas que funcionan correctamente, quiero que transfieras el código de esos archivos a sus archivos originales que se encuentran en la carpeta llamada Src, y los archivos csv a la carpeta llamada Data y las colas y similares en la carpeta llamada estructuras, es importante que no borres nada de los archivos en Src, solo implementa el nuevo código, además ten en cuenta la diferencia entre mayúsculas y minúsculas, y no olvides que ya que vas a mover el código, si se hacen llamadas a archivos cámbialos a sus respectivas nuevas rutas
+
+Si hay casos como
+
+producto en pruebas:self.id = id
+producto original: self.id_producto = id_producto
+
+manten el original y modifica el resto de los archivos para adaptarse a ello 
+
+además si es posible trata de usar la las funciones ya implementas en el original como el agregar_producto que es diferente del de la prueba y el original, si esto ocasiona errores no lo hagas
+---------------------------------------------------------------------------------------------------------------------
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------
