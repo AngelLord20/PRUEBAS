@@ -32,3 +32,8 @@ Importante:
 El resultado debe ser código en Python, funcional y sin errores, siguiendo las reglas del documento del proyecto.
 Por ahora centrémonos en el Cliente, y únicamente lo esencia para que esta funcione
 --------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------
+v1.2
+se movio los archivos a una carpeta llamada pruebas, funcionan correctamente
+--------------------------------------------------------------------------------------------------------------------------
