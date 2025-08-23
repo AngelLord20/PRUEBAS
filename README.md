@@ -75,7 +75,10 @@ manten el original y modifica el resto de los archivos para adaptarse a ello
 
 además si es posible trata de usar la las funciones ya implementas en el original como el agregar_producto que es diferente del de la prueba y el original, si esto ocasiona errores no lo hagas
 ---------------------------------------------------------------------------------------------------------------------
+v2.1
 
+se elimiron comentarios, se hizo pruebas(en productos.c), funcioa todo bien
+se puso un par de comentarios
 
 
 

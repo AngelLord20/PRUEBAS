@@ -1,7 +1,7 @@
 from datetime import datetime
 
 class Pago:
-    """Clase para representar un pago en el sistema"""
+
     
     def __init__(self, monto, fecha, cliente, email):
         self.monto = monto
@@ -11,7 +11,7 @@ class Pago:
         self.estado = "Pendiente"
     
     def procesar_pago(self):
-        """Procesar el pago (simulación)"""
+        
         self.estado = "Procesado"
         return True
     

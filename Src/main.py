@@ -1,3 +1,7 @@
+#IMPORTANTE ESTA CLASE MAIN SE CREO CON IA, PORQUE NO SE NADA DE GRAFICAR, 
+#hay que mover la parte de gui de esta clase a su respectiva clase
+
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 import csv

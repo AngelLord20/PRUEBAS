@@ -1,7 +1,7 @@
 from datetime import datetime
 
 class Orden:
-    """Clase para representar una orden de compra"""
+    
     
     def __init__(self, id, items, total, fecha, cliente):
         self.id = id
@@ -12,7 +12,7 @@ class Orden:
         self.estado = "Pendiente"
     
     def procesar_orden(self):
-        """Procesar la orden"""
+        
         self.estado = "Procesada"
         return True
     

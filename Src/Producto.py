@@ -41,7 +41,7 @@ class Producto:
         return f"Producto(id_producto={self.id_producto}, nombre='{self.nombre}', precio={self.precio})"
     
     def __eq__(self, other):
-        """Comparar productos por ID"""
+        
         if isinstance(other, Producto):
             return self.id_producto == other.id_producto
         return False

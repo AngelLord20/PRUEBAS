@@ -4,3 +4,4 @@ id_producto,nombre,precio,descripcion,stock
 3,Teclado Mecánico,89.99,Teclado mecánico RGB,20
 4,"Monitor 24""",199.99,Monitor LED 24 pulgadas,15
 5,Auriculares,45.0,Auriculares con micrófono,30
+6,Producto_6,1005.0,Numero_6,30
