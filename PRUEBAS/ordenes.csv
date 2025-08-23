@@ -1,3 +1,0 @@
-id_orden,fecha,cliente,producto,cantidad,precio_unitario,subtotal,total_orden
-1,2025-08-21 22:43:44,Angel,"Monitor 24""",1,199.99,199.99,244.99
-1,2025-08-21 22:43:44,Angel,Auriculares,1,45.0,45.0,244.99
