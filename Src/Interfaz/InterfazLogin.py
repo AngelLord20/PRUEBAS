@@ -2,6 +2,13 @@ from customtkinter import *
 from PIL import Image
 from tkinter import messagebox
 import os
+import sys
+
+# Agregar el directorio padre al path para importar módulos
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from Login import SistemaLogin
 
 class LoginApp(CTk):
@@ -16,18 +23,23 @@ class LoginApp(CTk):
         self.sistema_login = SistemaLogin()
         self.callback_login_exitoso = callback_login_exitoso    
         self.cliente_autenticado = None
+        self._callback_ejecutado = False  # Flag para evitar doble ejecución
         
-        # Configuración de ventana más robusta
-        self.geometry("750x580")  # Aumentar ancho de 600 a 750
-        self.resizable(False, False)  # Más explícito
+        # Configuración de ventana más robusta (tamaño original que se veía bien)
+        self.geometry("750x580")  # Mantener tamaño original
+        self.resizable(False, False)  # No redimensionable
         self.title("Sistema Ecomerce - Login")
         
-        # Configurar escalado DPI
+        # Configurar escalado DPI como originalmente (sin forzar límites)
         try:
             import ctypes
-            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            # Usar configuración DPI original que funcionaba bien
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)  # Volver a la configuración original
         except:
             pass  # En caso de que no esté en Windows
+        
+        # Configurar cierre de ventana
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         # Centrar ventana
         self.centrar_ventana()
@@ -37,6 +49,18 @@ class LoginApp(CTk):
         
         # Mostrar interfaz de login inicial
         self.mostrar_login()
+        
+        # NO forzar tamaño - dejar que se muestre naturalmente
+    
+    def on_closing(self):
+        """Manejar cierre de ventana de login"""
+        try:
+            print("🚪 Cerrando ventana de login...")
+            self.cliente_autenticado = None
+            self.destroy()
+        except Exception as e:
+            print(f"Error cerrando login: {e}")
+            self.quit()
     
     def centrar_ventana(self):
         """Centra la ventana en la pantalla con mejor compatibilidad."""
@@ -63,9 +87,11 @@ class LoginApp(CTk):
     def cargar_imagenes(self):
         """Carga las imágenes necesarias con mejor manejo de errores."""
         try:
-            # Obtener directorio actual del script
+            # Obtener directorio actual del script (Src/Interfaz/)
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            images_dir = os.path.join(current_dir, "Images")
+            # Subir un nivel para llegar a Src/ y luego entrar a Images/
+            src_dir = os.path.dirname(current_dir)
+            images_dir = os.path.join(src_dir, "Images")
             
             # Verificar que existe la carpeta
             if not os.path.exists(images_dir):
@@ -156,28 +182,111 @@ class LoginApp(CTk):
         CTkLabel(master=self.frame, text="  Email:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 14), image=self.email_icon, compound="left").pack(anchor="w", pady=(38, 0), padx=(40, 0))
         self.email_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", placeholder_text="usuario@universidad.edu")
         self.email_entry.pack(anchor="w", padx=(40, 0))
-        
-        # Password
-        CTkLabel(master=self.frame, text="  Password:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 14), image=self.password_icon, compound="left").pack(anchor="w", pady=(21, 0), padx=(40, 0))
+
+        # Contraseña
+        CTkLabel(master=self.frame, text="  Contraseña:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 14), image=self.password_icon, compound="left").pack(anchor="w", pady=(21, 0), padx=(40, 0))
         self.password_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", show="*", placeholder_text="Contraseña")
         self.password_entry.pack(anchor="w", padx=(40, 0))
         
         # Botón Iniciar Sesión
         self.login_btn = CTkButton(master=self.frame, text="Iniciar Sesión", fg_color="#601E88", hover_color="#E44982", font=("Arial Bold", 12), text_color="#ffffff", width=350, command=self.procesar_login)
         self.login_btn.pack(anchor="w", pady=(40, 0), padx=(40, 0))
-        
+
+        # Botón Cambiar Contraseña
+        CTkButton(master=self.frame, text="Cambiar Contraseña", fg_color="transparent", hover_color="#F0F0F0", font=("Arial Bold", 10), text_color="#E44982", width=350, command=self.mostrar_cambio_contrasena).pack(anchor="w", pady=(8, 0), padx=(40, 0))
+
         # Botón Registro
         CTkButton(master=self.frame, text="Crear Nueva Cuenta", fg_color="transparent", hover_color="#F0F0F0", font=("Arial Bold", 11), text_color="#601E88", width=350, command=self.mostrar_registro).pack(anchor="w", pady=(10, 0), padx=(40, 0))
-        
+
         # Información del admin
         CTkLabel(master=self.frame, text="Admin: admin@universidad.edu / admin123", text_color="#999999", font=("Arial", 8)).pack(pady=(15, 0), padx=(40, 0))
-        
+
         # Eventos de teclado
         self.email_entry.bind('<Return>', lambda e: self.password_entry.focus())
         self.password_entry.bind('<Return>', lambda e: self.procesar_login())
-        
+
         # Focus inicial
         self.email_entry.focus()
+
+    def mostrar_cambio_contrasena(self):
+        """Muestra la interfaz para cambiar la contraseña."""
+        self.limpiar_interfaz()
+
+        main_frame = CTkFrame(master=self, fg_color="#ffffff")
+        main_frame.pack(fill="both", expand=True)
+
+        left_frame = CTkFrame(master=main_frame, fg_color="transparent")
+        left_frame.pack(side="left", fill="both", expand=True)
+        CTkLabel(master=left_frame, text="", image=self.side_img).pack(expand=True)
+
+        self.frame = CTkFrame(master=main_frame, width=450, height=580, fg_color="#ffffff")
+        self.frame.pack_propagate(0)
+        self.frame.pack(side="right", padx=(0, 30), pady=0)
+
+        CTkLabel(master=self.frame, text="Restablecer Contraseña", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 22)).pack(anchor="w", pady=(25, 5), padx=(40, 0))
+        CTkLabel(master=self.frame, text="Ingrese los datos para cambiar su contraseña", text_color="#7E7E7E", anchor="w", justify="left", font=("Arial Bold", 12)).pack(anchor="w", padx=(40, 0))
+
+        # Email
+        CTkLabel(master=self.frame, text="  Email:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 12), image=self.email_icon, compound="left").pack(anchor="w", pady=(20, 5), padx=(40, 0))
+        self.cambio_email_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", placeholder_text="usuario@universidad.edu")
+        self.cambio_email_entry.pack(anchor="w", padx=(40, 0))
+
+        # Contraseña actual
+        CTkLabel(master=self.frame, text="  Contraseña actual:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 12), image=self.password_icon, compound="left").pack(anchor="w", pady=(12, 5), padx=(40, 0))
+        self.cambio_actual_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", show="*", placeholder_text="Contraseña actual")
+        self.cambio_actual_entry.pack(anchor="w", padx=(40, 0))
+
+        # Nueva contraseña
+        CTkLabel(master=self.frame, text="  Nueva contraseña:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 12), image=self.password_icon, compound="left").pack(anchor="w", pady=(12, 5), padx=(40, 0))
+        self.cambio_nueva_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", show="*", placeholder_text="Nueva contraseña")
+        self.cambio_nueva_entry.pack(anchor="w", padx=(40, 0))
+
+        # Confirmar nueva contraseña
+        CTkLabel(master=self.frame, text="  Confirmar nueva contraseña:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 12), image=self.password_icon, compound="left").pack(anchor="w", pady=(12, 5), padx=(40, 0))
+        self.cambio_confirmar_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", show="*", placeholder_text="Confirmar nueva contraseña")
+        self.cambio_confirmar_entry.pack(anchor="w", padx=(40, 0))
+
+        # Botón Cambiar
+        CTkButton(master=self.frame, text="Cambiar Contraseña", fg_color="#601E88", hover_color="#E44982", font=("Arial Bold", 12), text_color="#ffffff", width=350, command=self.procesar_cambio_contrasena).pack(anchor="w", pady=(20, 0), padx=(40, 0))
+
+        # Botón Volver
+        CTkButton(master=self.frame, text="← Volver al Login", fg_color="transparent", hover_color="#F0F0F0", font=("Arial Bold", 10), text_color="#601E88", width=350, command=self.mostrar_login).pack(anchor="w", pady=(8, 0), padx=(40, 0))
+
+        self.cambio_email_entry.focus()
+
+    def procesar_cambio_contrasena(self):
+        """Procesa el cambio de contraseña desde la interfaz."""
+        email = self.cambio_email_entry.get().strip()
+        actual = self.cambio_actual_entry.get()
+        nueva = self.cambio_nueva_entry.get()
+        confirmar = self.cambio_confirmar_entry.get()
+
+        if not all([email, actual, nueva, confirmar]):
+            messagebox.showerror("❌ Error", "Por favor complete todos los campos")
+            return
+        if nueva != confirmar:
+            messagebox.showerror("❌ Error", "Las nuevas contraseñas no coinciden")
+            return
+        if len(nueva) < 6:
+            messagebox.showerror("❌ Error", "La nueva contraseña debe tener al menos 6 caracteres")
+            return
+
+        # Buscar id_usuario por email
+        id_usuario = None
+        for user in self.sistema_login.usuarios_db.values():
+            if user['email'] == email:
+                id_usuario = user['id_usuario']
+                break
+        if not id_usuario:
+            messagebox.showerror("❌ Error", "Usuario no encontrado")
+            return
+
+        exito, mensaje = self.sistema_login.cambiar_password(id_usuario, actual, nueva)
+        if exito:
+            messagebox.showinfo("✅ Contraseña cambiada", "¡Contraseña actualizada exitosamente!")
+            self.mostrar_login()
+        else:
+            messagebox.showerror("❌ Error", mensaje)
     
     def mostrar_registro(self):
         """Muestra la interfaz de registro."""
@@ -259,17 +368,44 @@ class LoginApp(CTk):
                 
                 # Ejecutar callback si existe
                 if self.callback_login_exitoso:
-                    self.callback_login_exitoso(cliente, self.sistema_login)
-                
-                self.destroy()
+                    # Cerrar la ventana de login antes de ejecutar callback
+                    self.withdraw()  # Ocultar ventana en lugar de destruir inmediatamente
+                    self.after(100, lambda: self._ejecutar_callback_y_cerrar(cliente))
+                else:
+                    self.destroy()
             else:
                 messagebox.showerror("❌ Error de Login", mensaje)
                 self.password_entry.delete(0, "end")
                 self.password_entry.focus()
         
+        except Exception as e:
+            messagebox.showerror("❌ Error", f"Error inesperado: {str(e)}")
+            print(f"Error en login: {e}")
+        
         finally:
-            # Restaurar botón
-            self.login_btn.configure(state="normal", text="Iniciar Sesión")
+            # Restaurar botón si la ventana aún existe
+            try:
+                self.login_btn.configure(state="normal", text="Iniciar Sesión")
+            except:
+                pass
+    
+    def _ejecutar_callback_y_cerrar(self, cliente):
+        """Ejecutar callback y cerrar login de forma segura"""
+        try:
+            if self.callback_login_exitoso and not self._callback_ejecutado:
+                self._callback_ejecutado = True
+                print(f"🔄 Ejecutando callback para {cliente.nombre}")
+                self.callback_login_exitoso(cliente, self.sistema_login)
+            
+            # Cerrar ventana de login
+            self.destroy()
+            
+        except Exception as e:
+            print(f"❌ Error ejecutando callback: {e}")
+            try:
+                self.destroy()
+            except:
+                self.quit()
     
     def procesar_registro(self):
         """Procesa el registro de un nuevo usuario."""
@@ -323,9 +459,29 @@ class LoginApp(CTk):
 
 def mostrar_login(callback_login_exitoso=None):
     """Función principal para mostrar el login."""
-    app = LoginApp(callback_login_exitoso)
-    app.mainloop()
-    return app.obtener_cliente()
+    try:
+        # Configurar CustomTkinter para login (configuración ligera)
+        set_appearance_mode("light")
+        set_default_color_theme("blue")
+        
+        print("🔐 Iniciando ventana de login...")
+        
+        app = LoginApp(callback_login_exitoso)
+        
+        # Si hay callback, no necesitamos el retorno del mainloop
+        if callback_login_exitoso:
+            app.mainloop()
+            return None
+        else:
+            # Solo para uso directo sin callback
+            app.mainloop()
+            return app.obtener_cliente()
+            
+    except Exception as e:
+        print(f"❌ Error en mostrar_login: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 if __name__ == "__main__":
     # Prueba independiente
