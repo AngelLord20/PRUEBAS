@@ -1,8 +1,10 @@
 from customtkinter import *
 from PIL import Image
 from tkinter import messagebox
+
 import os
 import sys
+from datetime import datetime
 
 # Agregar el directorio padre al path para importar módulos
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -10,6 +12,12 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from Login import SistemaLogin
+# Imports explícitos de las clases principales del flujo de checkout
+from Src.Carrito import Carrito
+from Src.Checkout import Checkout
+from Src.Cliente import Cliente
+from Src.Pago import Pago
+from Src.Recibo import Recibo
 
 class LoginApp(CTk):
     def __init__(self, callback_login_exitoso=None):
@@ -57,11 +65,41 @@ class LoginApp(CTk):
         try:
             print("🚪 Cerrando ventana de login...")
             self.cliente_autenticado = None
+            # Cancelar todos los afters pendientes
+            if hasattr(self, '_after_ids'):
+                for after_id in self._after_ids:
+                    try:
+                        self.after_cancel(after_id)
+                    except Exception as e:
+                        print(f"Warning cancelando after: {e}")
+                self._after_ids.clear()
+            # Limpia widgets explícitamente antes de destruir
+            self.limpiar_interfaz()
+            # Elimina referencias a imágenes para evitar errores de pyimage
+            self.side_img = None
+            self.email_icon = None
+            self.password_icon = None
+            self.google_icon = None
+            self.avatar_icon = None
             self.destroy()
         except Exception as e:
             print(f"Error cerrando login: {e}")
             self.quit()
     
+    def after(self, ms, func=None, *args):
+        """Sobrescribe after para registrar los afters y poder cancelarlos todos al cerrar."""
+        if not hasattr(self, '_after_ids'):
+            self._after_ids = set()
+        after_id = super().after(ms, func, *args)
+        self._after_ids.add(after_id)
+        return after_id
+
+    def after_cancel(self, after_id):
+        """Sobrescribe after_cancel para mantener la lista limpia."""
+        if hasattr(self, '_after_ids') and after_id in self._after_ids:
+            self._after_ids.remove(after_id)
+        return super().after_cancel(after_id)
+
     def centrar_ventana(self):
         """Centra la ventana en la pantalla con mejor compatibilidad."""
         self.update_idletasks()
@@ -360,16 +398,22 @@ class LoginApp(CTk):
         
         try:
             # Intentar autenticación
-            exito, mensaje, cliente = self.sistema_login.iniciar_sesion(email, password)
-            
+            exito, mensaje, cliente_base = self.sistema_login.iniciar_sesion(email, password)
             if exito:
+                # Crear solo el carrito para el cliente, sin tarjeta
+                carrito = Carrito(cliente_id=cliente_base.id_cliente if hasattr(cliente_base, 'id_cliente') else cliente_base.nombre)
+                cliente = Cliente(
+                    id_cliente=cliente_base.id_cliente if hasattr(cliente_base, 'id_cliente') else cliente_base.nombre,
+                    nombre=cliente_base.nombre,
+                    email=cliente_base.email,
+                    carrito=carrito,
+                    telefono=getattr(cliente_base, 'telefono', "")
+                )
                 self.cliente_autenticado = cliente
                 messagebox.showinfo("✅ Login Exitoso", f"¡Bienvenido, {cliente.nombre}!")
-                
                 # Ejecutar callback si existe
                 if self.callback_login_exitoso:
-                    # Cerrar la ventana de login antes de ejecutar callback
-                    self.withdraw()  # Ocultar ventana en lugar de destruir inmediatamente
+                    self.withdraw()
                     self.after(100, lambda: self._ejecutar_callback_y_cerrar(cliente))
                 else:
                     self.destroy()
@@ -377,7 +421,6 @@ class LoginApp(CTk):
                 messagebox.showerror("❌ Error de Login", mensaje)
                 self.password_entry.delete(0, "end")
                 self.password_entry.focus()
-        
         except Exception as e:
             messagebox.showerror("❌ Error", f"Error inesperado: {str(e)}")
             print(f"Error en login: {e}")
@@ -394,14 +437,14 @@ class LoginApp(CTk):
         try:
             if self.callback_login_exitoso and not self._callback_ejecutado:
                 self._callback_ejecutado = True
-                print(f"🔄 Ejecutando callback para {cliente.nombre}")
+                print(f"Ejecutando callback para {cliente.nombre}")
                 self.callback_login_exitoso(cliente, self.sistema_login)
             
             # Cerrar ventana de login
             self.destroy()
             
         except Exception as e:
-            print(f"❌ Error ejecutando callback: {e}")
+            print(f"Error ejecutando callback: {e}")
             try:
                 self.destroy()
             except:
@@ -463,11 +506,12 @@ def mostrar_login(callback_login_exitoso=None):
         # Configurar CustomTkinter para login (configuración ligera)
         set_appearance_mode("light")
         set_default_color_theme("blue")
-        
-        print("🔐 Iniciando ventana de login...")
-        
+        print("Iniciando ventana de login...")
+        # Siempre crear una nueva instancia de LoginApp y sus imágenes
         app = LoginApp(callback_login_exitoso)
-        
+        # Forzar garbage collection para limpiar imágenes viejas
+        import gc
+        gc.collect()
         # Si hay callback, no necesitamos el retorno del mainloop
         if callback_login_exitoso:
             app.mainloop()
@@ -476,9 +520,8 @@ def mostrar_login(callback_login_exitoso=None):
             # Solo para uso directo sin callback
             app.mainloop()
             return app.obtener_cliente()
-            
     except Exception as e:
-        print(f"❌ Error en mostrar_login: {e}")
+        print(f"Error en mostrar_login: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -486,12 +529,12 @@ def mostrar_login(callback_login_exitoso=None):
 if __name__ == "__main__":
     # Prueba independiente
     def callback_prueba(cliente, sistema_login):
-        print(f"✅ Login exitoso: {cliente.nombre}")
-        print(f"📧 Email: {cliente.email}")
-        print(f"👤 Rol: {sistema_login.obtener_rol_usuario()}")
+        print(f"Login exitoso: {cliente.nombre}")
+        print(f"Email: {cliente.email}")
+        print(f"Rol: {sistema_login.obtener_rol_usuario()}")
     
     cliente = mostrar_login(callback_prueba)
     if cliente:
-        print(f"\n🎉 Usuario autenticado: {cliente.nombre}")
+        print(f"\n Usuario autenticado: {cliente.nombre}")
     else:
-        print("\n❌ Login cancelado")
+        print("\nLogin cancelado")

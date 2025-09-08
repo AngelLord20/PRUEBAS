@@ -1,4 +1,5 @@
 from datetime import datetime
+from TarjetaCredito import TarjetaCredito
 
 class ItemCarrito:
     """Representa un item en el carrito con cantidad"""
@@ -178,8 +179,13 @@ class Carrito:
             del self.items[producto_id]
             
             # Remover de lista de productos individuales
-            self.productos = [p for p in self.productos 
-                            if self._obtener_id_producto(p) != producto_id]
+            productos_iterable = self.productos
+            try:
+                productos_iterable = list(self.productos)
+            except Exception:
+                pass
+            self.productos = [p for p in productos_iterable 
+                              if self._obtener_id_producto(p) != producto_id]
             
             print(f"🗑️ Eliminado completamente: {producto_nombre}")
             return True
@@ -258,14 +264,17 @@ class Carrito:
         return self.obtener_cantidad_items()
     
     def pago_Carrito(self, metodo_pago):
-        """Procesar el pago del carrito"""
+        if not isinstance(metodo_pago, TarjetaCredito):
+            print("Método de pago no soportado")
+            return False
+        
         if self.esta_vacio():
-            print("❌ El carrito está vacío")
+            print("El carrito está vacío")
             return False
 
         total = self.calcular_total()
         print(f"💳 Procesando pago de ${total:.2f} para el carrito")
-        if metodo_pago.procesar_pago(total):
+        if metodo_pago.autorizar_pago(total):
             self.limpiar()
             return True
         return False

@@ -4,11 +4,10 @@ from TarjetaCredito import TarjetaCredito
 from Orden import Orden
 from datetime import datetime
 class Checkout:
-    def __init__(self, carrito, cliente, tarjetaDeCredito=None):
+    def __init__(self, carrito, cliente):
         self.carrito = carrito
         self.cliente = cliente
         self.total = 0
-        self.tarjetaDeCredito = tarjetaDeCredito
 
     def procesar_checkout(self, direccion_envio, metodo_pago):
         if not self.carrito.mostrar_carrito():
@@ -38,12 +37,10 @@ class Checkout:
                     raise ValueError(f"El producto {item.nombre} no tiene stock disponible")
     
     def procesar_pago(self, metodo_pago):
-        if metodo_pago == "Tarjeta de Crédito":
-            if not self.tarjetaDeCredito:
+        if isinstance(metodo_pago, TarjetaCredito):
+            if not metodo_pago:
                 raise ValueError("No se proporcionó una tarjeta de crédito")
-            if not self.tarjetaDeCredito.validar_tarjeta():
-                raise ValueError("La tarjeta de crédito no es válida")
-            if not self.tarjetaDeCredito.autorizar_pago(self.total):
+            if not metodo_pago.autorizar_pago(self.total):
                 raise ValueError("El pago fue rechazado por la entidad bancaria")
 
     def generar_orden(self, direccion_envio):
@@ -62,10 +59,15 @@ class Checkout:
             else:  # Es un Producto directamente
                 item.reducir_stock(item.stock)
     
-    def crear_recibo(self):
-        self.orden.generar_recibo()
-        pass
+def crear_recibo(self):
+    recibo = recibo.generar_desde_carrito(
+        id_recibo=f"R-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+        cliente=self.cliente,
+        carrito=self.carrito,
+        metodo_pago=None
+    )
+    self.orden.recibo = recibo
+    return recibo
 
-    def vaciar_carrito(self):
-        self.carrito.vaciar_carrito()
-    
+def vaciar_carrito(self):
+    self.carrito.vaciar_carrito()
